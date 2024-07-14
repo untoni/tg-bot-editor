@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, minimum-scale=1, user-scalable=no">
+	<title></title>
+
+	<style type="text/css">
+		.no-select {
+	    	-webkit-user-select: none; /* Chrome, Safari, Opera */
+	    	-moz-user-select: none; /* Firefox */
+	    	-ms-user-select: none; /* Internet Explorer/Edge */
+	    	user-select: none; /* Стандартне значення */
+	  	}
+	  	html, body {
+			overflow: hidden;
+		}
+		
+	</style>
+
+	<style type="text/css">
+		body {
+			margin: 0;
+			display: flex;
+			width: 100vw;
+			height: 100vh;
+		}
+		svg {
+			display: block;
+		}
+		/*button {
+			border-radius: 5px;
+		}*/
+
+
+		aside {
+			position: fixed;
+			display: flex;
+			flex: 0;
+			flex-direction: column;
+			width: 50px;
+			height: calc(100% - 10px);
+			padding: 5px;
+			background: #333;
+			z-index: 10000;
+
+		}
+		aside .button + .button {
+			margin-top: 5px;
+		}
+		aside .button {
+			width: 100%;
+			aspect-ratio: 1;
+			background: #666;
+			border-radius: 5px;
+			border: none;
+		}
+		aside .button svg {
+			width: 40px;
+			height: 40px;
+			margin: 5px;
+			color: #fff;
+		}
+		
+
+		main {
+			width: 100%;
+			height: 100%;
+			background: #fff;
+			overflow: hidden;
+		}
+		main #space {
+			position: absolute;
+			scale: 1;
+		}
+		.block {
+			position: absolute;
+			background: #444;
+			padding: 5px;
+			border-radius: 7px;
+		}
+		.block.select {
+			background: #55a;
+		}
+		.block > * {
+			color: #fff;
+			width: 100%;
+		}
+		.block > * + * {
+			margin-top: 5px;
+		}
+		#selectZone {
+			position: absolute;
+			background: #24e5;
+			border: 1px #24e solid; 
+			border-radius: 5px;
+			opacity: 0;
+			transition: opacity 0.3s ease;
+		}
+
+
+		.block .text {
+
+		}
+		.block .button-row {
+			display: flex;
+		}
+		.block .button-row button + button {
+			margin-left: 5px;
+		}
+		.block button {
+			width: 100%;
+			height: 40px;
+			border-radius: 5px;
+			border: 1px #fff solid;
+			background: #aaa;
+			opacity: 0.5;
+		}
+		.block img, #space .block canvas {
+			border-radius: 5px;
+		}
+
+
+
+	</style>
+</head>
+<body>
+	<aside>
+		
+	</aside>
+	<main data="space">
+		<div id="functional-space" class="no-select">
+			
+		</div>
+		<div id="space" class="no-select">
+			
+		</div>
+	</main>
+</body>
+</html>
+
+
+<script src="elementsChange.js" type="text/javascript"></script>
+<script src="blockBase.json" type="text/json"></script>
+
+<script type="text/javascript"> //											basic Function
+	function random(r, c = false) {
+		return Math.random() * r - (r*0.5 * c)
+	}
+
+	function delPx(px) {
+		return Number(px.slice(0, px.length-2))
+	}
+
+	function findContext(el) {
+		while (el.attributes.data == undefined) {
+			el = el.parentElement
+		}
+		return [el, el.attributes.data.value]
+	}
+
+
+
+</script>
+
+<script type="text/javascript">//												Initial
+	const toolsBar = document.querySelector('aside')
+	const workSpace = document.querySelector('main #space')
+	const funcSpace = document.querySelector('main #functional-space')
+	workSpace.style.scale = 1
+
+	for (let i = 0; i < 3; i++) {
+		toolsBar.innerHTML += `<div class="button"> <svg></svg> </div>`
+	}
+
+</script>
+
+<script type="text/javascript">//				function Control
+/* 
+________________________________________________________________________________________________________________
+																												|
+										ФУНКЦІЇ, для манапіляції ЕЛЕМЕНТАМИ										|
+________________________________________________________________________________________________________________|
+*/
+
+	let mouseInitial = {x: 0, y: 0}//						-	Ініціалізація всіх глобальних змінних і об'єктів
+	var mouse = {x:0, y:0}
+	let spaceModel = {x: 0, y: 0, s: 1, scaleIs: false}
+	let spaceScale
+	let spaceMove = {is: false, render: 0, x: 0, y: 0}
+	let spaceRect = workSpace.getBoundingClientRect()
+		spaceRect.s = 1
+
+
+	function selectBlocksCheck(minX, minY, maxX, maxY) {//			-	Селектить блоки, що обводяться ласо
+		for (let i in blocks.list) {
+			let block = blocks.list[i]
+			if (minX < block.maxX && maxX > block.x && minY < block.maxY && maxY > block.y) {
+				blocks.select(i)
+			} else {
+				blocks.unselect(i)
+			}
+		}
+	}
+
+	function changeSpaceScale(s, x, y) {//							-	Змінює масштаб простору
+		if(!spaceModel.scaleIs) {
+			spaceModel.scaleIs = true
+			spaceScale = setInterval(scaleSpaceRender, 10)
+		}
+		x = spaceModel.x - x
+		y = spaceModel.y - y
+		if (s > 0) {
+			spaceModel.s = spaceModel.s * s
+			changeSpaceModelPosition(x * (s - 1), y * (s - 1))
+		} else if (s < 0) {
+			spaceModel.s = spaceModel.s / Math.abs(s)
+			changeSpaceModelPosition(x * (1 / Math.abs(s) - 1), y * (1 / Math.abs(s) - 1))
+		} else {
+			spaceModel.s = 1
+			changeSpaceModelPosition(0, 0, true)
+		}
+	}
+
+	function scaleSpaceRender() {//									-	Потрібне для плавного масштабування простору
+		let s = workSpace.style.scale
+		let x = delPx(workSpace.style.left)
+		let y = delPx(workSpace.style.top)
+		if (Math.abs(spaceModel.s - s) < 0.005 && spaceModel.x - x < 1 && spaceModel.y - y < 1 ) {
+			workSpace.style.scale = spaceModel.s
+			spaceModel.scaleIs = false
+			clearInterval(spaceScale)
+			return
+		}
+		workSpace.style.scale = Number(s) + (spaceModel.s - s) * 0.2
+		x += (spaceModel.x - x) * 0.2
+		y += (spaceModel.y - y) * 0.2
+		changeSpacePosition(x, y)
+	}
+
+	function changeSpaceModelPosition(x, y, c = false) {//			-	Змінює координати простору у вигляді моделі
+		if (!c) {
+			x = spaceModel.x + x
+			y = spaceModel.y + y
+		}
+		spaceModel.x = x
+		spaceModel.y = y
+
+		if (!spaceModel.scaleIs) {
+			changeSpacePosition(x, y)
+		}
+	}
+
+	function changeSpacePosition(x, y) {//							-	Змінює координати html простору 
+		workSpace.setStyles({x: x + 'px', y: y + 'px'})
+		spaceRect = workSpace.getBoundingClientRect()
+		spaceRect.s = 1 / getComputedStyle(workSpace).scale
+	}
+
+	function displacementOfSpace(x, y, s = 0.1) {//					-	Зсуває простір, коли об'єкт що тягнуть, торкається краю екрану
+		let w = window.innerWidth  * 0.5
+		let h = window.innerHeight * 0.5
+		let x1 = 100 - (w - Math.abs(x - w))
+		let y1 = 100 - (h - Math.abs(y - h))
+		let isX = x1 > 0
+		let isY = y1 > 0
+		if (isX || isY) {
+			if (!spaceMove.is) {
+				spaceMove.render = setInterval(displacementOfSpaceRender, 10)
+				spaceMove.is = true
+			}
+			spaceMove.x = x1 * (x < w ? s : -s) * isX
+			spaceMove.y = y1 * (y < h ? s : -s) * isY
+		} else {
+			clearInterval(spaceMove.render)
+			spaceMove.is = false
+		}
+	}
+
+	function displacementOfSpaceRender() {//						-	Для плавного зсування простору
+		changeSpaceModelPosition( spaceMove.x, spaceMove.y )
+		let {el, data, b} = mouseContext
+
+		try {
+			funcControl[b][data](el, mouse.x, mouse.y)
+		} catch {}
+
+		if (mouseContext.empty) {
+			clearInterval(spaceMove.render)
+			spaceMove.is = false
+		}
+	}
+
+	function changeBlockModelPosition(el, x, y) {//					-	Змінює координати моделі блоку і його html  
+		el.setStyles({x: x + 'px', 
+					  y: y + 'px'})
+		blocks.change(el.attributes.dataId.value, x, y)
+	}
+
+/* 
+________________________________________________________________________________________________________________
+																												|
+						ОБ'ЄКТИ, що мають в собі ФУНКЦІЇ для маніпулюівнням ЕЛЕМЕНТАМИ							|
+________________________________________________________________________________________________________________|
+*/
+
+	const funcControlInitial = {//			-	Спочатку приймає клавішу миші, потім назву елементу на який нажато
+		0: {
+			block: function(el, x, y, e) {
+				if (el.classList.contains('select')) {//		-	Ще не доробив, але це треба для різної поведінки блоків, коли вони заселекчені
+					let group = document.createElement('div')
+					group.setStyles({x: (x - spaceRect.x) * spaceRect.s, y: (y - spaceRect.y) * spaceRect.s})
+					workSpace.appendChild()
+
+					let rect = el.getBoundingClientRect()
+					el.parentElement.appendChild(el)
+					mouseInitial = {x: (rect.x - x) * spaceRect.s, y: (rect.y - y) * spaceRect.s}
+				} else{
+					let rect = el.getBoundingClientRect()
+					el.parentElement.appendChild(el)
+					mouseInitial = {x: (rect.x - x) * spaceRect.s, y: (rect.y - y) * spaceRect.s}
+				}
+				
+			},
+			space: function(el, x, y, e) {
+				mouseInitial = {x: (x - spaceRect.x) * spaceRect.s, y: (y - spaceRect.y) * spaceRect.s}
+
+				let selectZone = document.createElement('div')
+				selectZone.setStyles({x: mouseInitial.x + 'px', 
+									  y: mouseInitial.y + 'px', 
+									  w: '0px', 
+									  h: '0px',
+									  o: 1})
+				selectZone.id = 'selectZone'
+				workSpace.appendChild(selectZone)
+			}
+		}
+	}
+
+	const funcControl = {
+		0: {
+			block: function(el, x, y, e) {//						-	Рухає блоки
+				changeBlockModelPosition(el, (x - spaceRect.x) * spaceRect.s + mouseInitial.x, (y - spaceRect.y) * spaceRect.s + mouseInitial.y)
+				displacementOfSpace(x, y)
+			},
+			space: function(el, x, y, e) {//						-	Селектить блоки
+				let select = document.querySelector('#selectZone')
+				let minX, maxX, minY, maxY
+				let x2 = (x - spaceRect.x) * spaceRect.s
+				let y2 = (y - spaceRect.y) * spaceRect.s
+				let w = Math.abs(mouseInitial.x - x2)
+				let h = Math.abs(mouseInitial.y - y2)
+				if (x2 > mouseInitial.x) {
+					select.style.left = mouseInitial.x + 'px'
+					minX = mouseInitial.x
+					maxX = x2
+				} else {
+					select.style.left = x2 + 'px'
+					minX = x2
+					maxX = mouseInitial.x
+				}
+				if (y2 > mouseInitial.y) {
+					select.style.top = mouseInitial.y + 'px'
+					minY = mouseInitial.y
+					maxY = y2
+				} else {
+					select.style.top = y2 + 'px'
+					minY = y2
+					maxY = mouseInitial.y
+				}
+				select.setStyles({w: w + 'px', h: h + 'px'})
+				displacementOfSpace(x, y)
+				selectBlocksCheck(minX, minY, maxX, maxY)
+			},
+		},
+		1: {
+			space: function(el, x, y, e) {//						-	Рухає простір
+				changeSpaceModelPosition(x - mouse.x, y - mouse.y)
+				displacementOfSpace(x, y, -0.1)
+			},
+			block: function(el, x, y, e) {this.space(el, x, y)}
+		},
+	}
+
+	const funcControlEnd = {
+		0: {
+			space: function(el, x, y) {
+				let select = document.querySelector('#selectZone')
+				select.style.opacity = 0
+				setTimeout(() => {select.parentElement.removeChild( select )}, 300);
+			}
+		}
+	}
+
+</script>
+
+<script type="text/javascript">//										mouse Control
+/* 
+________________________________________________________________________________________________________________
+																												|
+						ІВЕНТИ миші і клавіатури, що керують ОБ'ЄКТАМИ і викликають ФУНКЦІЇ						|
+________________________________________________________________________________________________________________|
+*/
+	let mouseContext = {//	-	Об'єкт, що зберігає контекст миші (на який об'єкт натиснуто і інші аргументи)
+		el: null,
+		data: null,
+		b: null,
+		x: null,
+		y: null,
+		empty: true,
+		clear: function() {
+			this.el = null,
+			this.data = null,
+			this.b = null,
+			this.x = null,
+			this.y = null,
+			this.empty = true
+		},
+		fill: function(el, data, b, x, y) {
+			this.el = el,
+			this.data = data,
+			this.b = b,
+			this.x = x,
+			this.y = y,
+			this.empty = false
+		}
+	}
+	let keyPressList = []
+
+	window.onmousedown = (e) => {//			Коли мишу натиснуто
+		if (!mouseContext.empty) return
+
+		let [el, data] = findContext(e.target)//	-	Було натиснуто на якийсь дочірній елемент, і ця функція шукає ГОЛОВНИЙ елемент (який має аргумент data), з яким потрібно буде робити маніпуляції   (155) 
+		mouseContext.fill(el, data, e.button, e.x, e.y)//			-	Заповнює контекст миші даними, потібними у наступних івентах
+
+		try {
+			funcControlInitial[e.button][data](el, e.x, e.y, e)//	-	Викликає функцію в об'єкті, який відповідає зі ініціалізацію станів елементів   (308)
+		} catch {}//														(я міг би її реалізувати через функцію, але боявся що при кожному її викливу, об'єкт буде ініціалізуватися заново)
+
+		mouse = {x: e.x, y: e.y}//									-	Зберігає МИНУЛІ координати миші для наступної ітерації івента (для визначення швидкості миші і тд.)
+	}
+
+	window.onmousemove = (e) => {//			Поки мишу затиснуто
+		if (mouseContext.empty) return
+
+		let {el, data, b} = mouseContext//							-	Розпаковує дані контексту миші, у змінні
+		
+		try {
+			funcControl[b][data](el, e.x, e.y, e)//					-	Викликає функцію в об'єкті, для маніпуляції елементами
+		} catch {}
+
+		mouse = {x: e.x, y: e.y}	
+	}
+
+	window.onmouseup = (e) => {//			Коли мишу віджато
+		let {data, b} = mouseContext
+		try {
+			funcControlEnd[b][data]()
+		} catch {}
+
+		mouseContext.clear()
+	}
+
+	window.addEventListener('wheel', function(e) {
+    	if (e.ctrlKey) {
+    		e.preventDefault()
+    		changeSpaceScale(0.01 * e.wheelDelta, e.x, e.y)
+    	}
+    }, { passive: false })
+
+	window.onkeydown = (e) => {
+		if ((e.ctrlKey || e.metaKey) && (e.keyCode === 189 || e.keyCode === 187 || e.keyCode === 48)) {//		-	Зчитує колесико миші, для збільшення і зменшення робочого простору
+        	e.preventDefault()
+        	changeSpaceScale(1.20 * ((e.keyCode === 189) ? -1 : (e.keyCode === 187) ? 1 : 0), window.innerWidth * 0.5, window.innerHeight * 0.5)
+    	} else {
+
+    	}
+	}
+
+</script>
+
+<script type="text/javascript">//				generate Elements
+/* 
+________________________________________________________________________________________________________________
+																												|
+						ІНІЦІАЛІЗАЦІЯ html елементів, з цього ПОЧИНАЄТЬСЯ програма								|
+________________________________________________________________________________________________________________|
+*/
+
+	let blocks = {//									-	Об'єкт, що зберігає віртуальноу модель блоків 
+		list: [],
+		selectList: [],
+		add: function(el, x, y, w, h) {
+			this.list.push({el: el, x: x, y: y, w: w, h: h, maxX: x + w, maxY: y + h})
+		},
+		select: function(id) {
+			let block = this.list[id]
+			if (!block.el.classList.contains('select')) {
+				this.selectList.push(id)
+				block.el.classList.add('select')
+			}
+		},
+		unselect: function(id) {
+			let block = this.list[id]
+			if (block.el.classList.contains('select')) {
+				let i = this.selectList.indexOf(id)
+				this.selectList.toSpliced(i, 1)
+				block.el.classList.remove('select')
+			}
+		},
+		unselectAll: function() {
+			for (let i of this.selectList) {
+				this.unselect(i)
+			}
+		},
+		change: function(id, x, y, h) {
+			let list = this.list[id]
+			this.list[id].x = x
+			this.list[id].y = y
+			this.list[id].maxX = x + list.w
+			this.list[id].h = h || list.h
+			this.list[id].maxY = y + list.h
+
+		},
+		remove: function(id) {
+			this.list.toSpliced(id, 1)
+		}
+	}
+
+
+	function generateBlock() {//						-	Генеруються блоки
+		let block = document.createElement('div')
+		block.setClasses(['block'])
+		block.setStyles({w: 300 + 'px', x: random(800) + "px", y: random(800) + "px"})
+		block.setAttribute('data', 'block')
+		block.setAttribute('dataId', blocks.list.length)
+		block.innerHTML = `	<div class="text"> Hello! I'm tg-bots editor, nice to meet you! </div>
+							<div class="button-row">
+								<button> Button first</button>
+								<button> Button second</button>
+							</div>`
+		workSpace.appendChild(block)
+		
+		let rect = block.getBoundingClientRect()
+		blocks.add(block, rect.x, rect.y, rect.width, rect.height)//			-	Додаємо блок у об'єкт з віртуальними моделями блоків
+	}
+
+
+	for (let i = 0; i < 3; i++) {
+		generateBlock()
+	}
+
+</script>
