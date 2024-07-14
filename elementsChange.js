@@ -1,16 +1,9 @@
 const styleList = {
-	width: 'width', w: 'width',
-	height: 'heigth', h: 'height',
-	left: 'left', x: 'left',
-	top: 'top', y: 'top',
-	opacity: 'opacity', o: 'opacity',
-	margin: 'margin', //mrg: 'margin',
-	padding: 'padding', //padd: 'padding',
-	display: 'display', //dspl: 'display',
-	position: 'position', //pstn: 'position',
-	background: 'background', //backg: 'background',
-	border: 'border', borderRadius: 'borderRadius',
-	transition: 'transition'
+	w: 'width',
+	h: 'height',
+	x: 'left',
+	y: 'top',
+	o: 'opacity'
 }
 Element.prototype.hide = function() {
 	if (this.classList.contains('active')) {
