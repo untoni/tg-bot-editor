@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+	<style>
+		body {
+			--marg2: 4px;
+			--marg:  2px;
+			
+		}
+		* {
+			--black: #383838;
+			font-family: "Andale Mono", monospace;
+		}
+		svg {
+			display: block;
+		}
+		input {
+			border: none;
+			outline: none;
+		}
+
+		.r-edge .r-e, .r-edge {
+			border-radius: 40px;
+			overflow: hidden;
+		}
+		.overflow-h-all:not(.overflow-s) {
+			overflow: hidden;
+		}
+	</style>
+
+	<style type="text/css">
+		.window#pasterisated-image {
+			width: 310px;
+			height: 500px;
+		}
+		.window#pasterisated-image .block {
+			width: 100%;
+			height: 60px;
+			background: #6a6a6a;
+			opacity: 0.9;
+			display: flex;
+		}
+		.window#pasterisated-image .block #element {
+			display: flex;
+			align-items: center;
+			padding: 2px;
+			margin: 4px;
+			width: 100%;
+			background: var(--black);
+		}
+		.window#pasterisated-image .block #element * {
+			margin: 2px;
+			background: #fff;
+		}	
+		.window#pasterisated-image #color {
+			height: calc(100% - 4px);
+			aspect-ratio: 1;
+			background: #fff;
+			position: relative;
+			padding: 0px !important;
+		}
+		.window#pasterisated-image #color * {
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			margin: 0px !important;
+		}
+
+		.window#pasterisated-image #hex-code {
+			display: flex;
+			height: calc(100% - 8px);
+			transition: flex 0.3s ease;
+		}
+		.window#pasterisated-image #hex-code.open {
+			width: fit-content;
+			flex: 1;
+		}
+		.window#pasterisated-image #hex-code:not(.open) {
+			aspect-ratio: 1;
+			flex: 0 0 40px;
+		}	
+		.window#pasterisated-image #hex-code #type-code-select {
+			display: flex;
+			aspect-ratio: 1;
+			flex: none;
+			
+		}
+		.window#pasterisated-image #hex-code #type-code-select svg {
+			width: 40px;
+			aspect-ratio: 1;
+			background: #E3E3E3;
+			margin: 0px;
+		}
+		.window#pasterisated-image #hex-text {
+			height: calc(100% - 6px);
+			font-size: 20px;
+			padding-left: 4px;
+			border: none;
+			margin-left: -2px !important;
+		}
+
+		.window#pasterisated-image #priority {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			height: calc(100% - 8px);
+			width: fit-content;
+			font-size: 20px;
+			background: #fff;
+			transition: flex 0.3s ease;
+		}
+		.window#pasterisated-image #priority.open {
+			flex: 1;
+		}
+		.window#pasterisated-image #priority:not(.open) {
+			flex: 0.01 0 60px;
+		}
+		.window#pasterisated-image #priority #percentage-text {
+			margin: 5px;
+		}
+
+		.window#pasterisated-image #sub-colors {
+			height: calc(100% - 4px);
+			aspect-ratio: 1;
+			background: col;
+		}
+
+
+
+	</style>
+</head>
+<body>
+	<div id="pasterisated-image" class="window">
+		<div class="swiper-but"></div>
+		<div class="block">
+			<div id="element" class="r-edge overflow-h-all">
+				<div id="color" class=" r-e">
+					<div class="r-e" style="background-image: linear-gradient(45deg, #bbb 25%, transparent 0),  linear-gradient(45deg, transparent 75%, #bbb 0), linear-gradient(45deg, #bbb 25%, transparent 0),  linear-gradient(45deg, transparent 75%, #bbb 0); 
+											background-position: 0 0, 8px 8px, 8px 8px, 16px 16px;
+											background-size: 16px 16px;">							
+					</div>
+					<div style="background: #36f; "></div>
+				</div>
+				<div id="hex-code" class=" r-e open">
+					<div id="type-code-select" class=" r-e">
+						<svg viewBox="-3 -3 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<path d="m 8.4 4 l -2 12 m 6 -12 l -2 12 m 5.2 -8 h -12 m 11.4 4 h -12" stroke="#383838" stroke-width="1.5" stroke-linecap="round"/>
+						</svg>
+					</div>
+					<input type="text" id="hex-text" class=" r-e">
+				</div>
+				<div id="priority" class=" r-e">
+					<div id="percentage-scale" ></div>
+					<div id="percentage-text" >100%</div>
+				</div>
+				<div id="sub-colors" class=" r-e">
+					<div id="close-but" ></div>
+					<div id="sub-color-r" ></div>
+				</div>
+			</div>
+		<div id="close-but" >
+			<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<path d="m 8.4 4 l -2 12 m 6 -12 l -2 12 m 5.2 -8 h -12 m 11.4 4 h -12" stroke="#383838" stroke-width="1.5" stroke-linecap="round"/>
+			</svg>
+		</div>
+			
+		</div>
+
+	</div>
+</body>
+</html>
+
+<script src="elementsChange.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+	const hexLetters = '0123456789ABCDEFabcdef' 
+	const arrowKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']
+
+
+	const pasterisatedBlocks = document.querySelectorAll('#pasterisated-image .block')
+	pasterisatedBlocks.forEach((el) => el.onmouseup = (e) => {//				-	Викликаю
+		const color = el.querySelector('#color').querySelectorAll('div')[1]
+		const hex = el.querySelector('#hex-code')
+		const priority = el.querySelector('#priority')
+		const subColors = el.querySelector('#sub-colors')
+
+		hex.onmouseup = (e) => {
+			if (!hex.classList.contains('open')) {
+				hex.addClass('open')
+				priority.removeClass('open')
+			}
+			hex.onmouseup = null
+		
+		}
+		priority.onmouseup = (e) => {
+			if (!priority.classList.contains('open')) {
+				priority.addClass('open')
+				hex.removeClass('open')
+			}
+			priority.onmouseup = null
+		}
+		
+
+		hex.onkeydown = (e) => {
+			const key = e.key
+			const input = hex.querySelector('input')
+			const val = input.value
+			if (val.length > 7 && key !== 'Backspace') {
+				input.value = val.slice(0, val.length-1)
+			}
+			const startPos = input.selectionStart
+			const endPos = input.selectionEnd
+			console.log(startPos, endPos, val.slice(0, startPos), val.slice(endPos, val.length))
+			const col = '#' + ((arrowKeys.indexOf(key) >= 0) ? val : ((val.slice(0, startPos) + ((hexLetters.indexOf(key) >= 0) ? key : '') + val.slice(endPos, val.length))))
+			color.style.background = col
+
+		}
+	})
+
+</script>
